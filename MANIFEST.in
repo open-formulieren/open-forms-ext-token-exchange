@@ -1,0 +1,9 @@
+include *.rst
+include LICENSE
+include open_forms_ext_token_exchange/py.typed
+recursive-include open_forms_ext_token_exchange *.html
+recursive-include open_forms_ext_token_exchange *.txt
+recursive-include open_forms_ext_token_exchange *.po
+global-exclude __pycache__
+global-exclude *.py[co]
+
