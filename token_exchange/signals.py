@@ -4,13 +4,12 @@ from django.core import signals
 from django.dispatch import receiver
 
 from openforms.authentication.signals import authentication_success
-from rest_framework.request import Request
 
 storage = threading.local()
 
 
 @receiver(authentication_success, dispatch_uid="token_exchange.extract_access_token")
-def extract_access_token(sender, request: Request, **kwargs) -> None:
+def extract_access_token(sender, request, **kwargs) -> None:
     # TODO Extract token from request
     access_token = "some extracted token"
     id_token = "some extracted id token"
