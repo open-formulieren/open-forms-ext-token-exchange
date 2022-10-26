@@ -22,7 +22,7 @@ class CustomAuthClassTests(TestCase):
             history = m.request_history
 
         self.assertEqual(1, len(history))
-        self.assertNotIn("haal-centraal-header-TODO", history[0].headers)
+        self.assertNotIn("Authorization", history[0].headers)
 
     def test_add_header(self):
         external_api_url = "http://external-api-with-token-exchange.org/user/data/111"
@@ -56,4 +56,4 @@ class CustomAuthClassTests(TestCase):
                 history = m.request_history
 
         self.assertEqual(3, len(history))
-        self.assertIn("haal-centraal-header-TODO", history[2].headers)
+        self.assertIn("Authorization", history[2].headers)

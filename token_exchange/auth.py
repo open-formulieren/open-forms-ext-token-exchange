@@ -36,5 +36,5 @@ class TokenAccessAuth(AuthBase):
 
         self.token = data["access_token"]
         # TODO find out header name
-        request.headers["haal-centraal-header-TODO"] = self.token
+        request.headers["Authorization"] = self.token
         return request
