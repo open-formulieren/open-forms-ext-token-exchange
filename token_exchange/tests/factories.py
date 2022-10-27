@@ -12,9 +12,6 @@ class ServiceFactory(factory.django.DjangoModelFactory):
 class TokenExchangeConfigurationFactory(factory.django.DjangoModelFactory):
     service = factory.SubFactory(ServiceFactory)
     audience = "target-client"
-    client_id = "starting-client"
-    secret = "the client secret"
-    discovery_endpoint = "http://keycloak.nl/realms/zgw-publiek/"
 
     class Meta:
         model = TokenExchangeConfiguration
