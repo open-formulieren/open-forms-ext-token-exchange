@@ -1,5 +1,6 @@
 import requests
 from furl import furl
+from openforms.authentication.registry import register as registry
 from requests.auth import AuthBase
 
 from .models import TokenExchangeConfiguration
@@ -9,22 +10,33 @@ from .signals import storage
 GRANT_TYPE = "urn:ietf:params:oauth:grant-type:token-exchange"
 
 
+def get_plugin_config(auth_plugin):
+    return auth_plugin.config_class.get_solo()
+
+
 class TokenAccessAuth(AuthBase):
     def __call__(self, request):
         config = TokenExchangeConfiguration.objects.filter(
             service__api_root__startswith=furl(request.url).origin
         ).first()
 
-        if not config:
+        if not config or not storage.plugin:
             return request
 
+        auth_plugin = registry[storage.plugin]
+        # Only the plugins that inherit from OIDCAuthentication have the attribute config_class
+        if not hasattr(auth_plugin, "config_class"):
+            return request
+
+        plugin_config = get_plugin_config(auth_plugin)
+
         # Perform token exchange
-        exchange_url = furl(config.token_exchange_endpoint).set(
+        exchange_url = furl(plugin_config.oidc_op_token_endpoint).set(
             {
                 "grant_type": GRANT_TYPE,
                 "subject_token": storage.access_token,
-                "client_id": config.client_id,
-                "client_secret": config.secret,
+                "client_id": plugin_config.oidc_rp_client_id,
+                "client_secret": plugin_config.oidc_rp_client_secret,
                 "audience": config.audience,
             }
         )
@@ -34,7 +46,6 @@ class TokenAccessAuth(AuthBase):
         )
         data = response.json()
 
-        self.token = data["access_token"]
-        # TODO find out header name
-        request.headers["Authorization"] = self.token
+        # TODO confirm header name
+        request.headers["Authorization"] = data["access_token"]
         return request
