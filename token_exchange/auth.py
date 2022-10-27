@@ -2,6 +2,7 @@ import requests
 from furl import furl
 from openforms.authentication.registry import register as registry
 from requests.auth import AuthBase
+from zgw_consumers.models import Service
 
 from .models import TokenExchangeConfiguration
 from .signals import storage
@@ -16,9 +17,8 @@ def get_plugin_config(auth_plugin):
 
 class TokenAccessAuth(AuthBase):
     def __call__(self, request):
-        config = TokenExchangeConfiguration.objects.filter(
-            service__api_root__startswith=furl(request.url).origin
-        ).first()
+        service = Service.get_service(request.url)
+        config = TokenExchangeConfiguration.objects.filter(service=service).first()
 
         if not config or not storage.plugin:
             return request
