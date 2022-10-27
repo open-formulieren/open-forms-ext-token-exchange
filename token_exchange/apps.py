@@ -8,4 +8,4 @@ class TokenExchangeConfig(AppConfig):
     verbose_name = _("Token exchange plugin")
 
     def ready(self):
-        from . import plugin  # noqa
+        from . import plugin, signals  # noqa
