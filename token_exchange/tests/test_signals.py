@@ -1,60 +1,38 @@
-from unittest.mock import patch
-
+from django.core.cache import cache
 from django.test import TestCase
 
 from openforms.authentication.constants import FORM_AUTH_SESSION_KEY
+from openforms.submissions.tests.factories import SubmissionFactory
 from rest_framework.test import APIRequestFactory
 
-from ..signals import clear_storage, extract_access_token
+from ..signals import set_submission_access_token
 
 factory = APIRequestFactory()
 
 
 class SignalReceiverTests(TestCase):
-    def test_extract_access_token(self):
+    def test_set_accesstoken_in_cache(self):
         request = factory.get("/foo")
         request.session = {
             FORM_AUTH_SESSION_KEY: {
                 "plugin": "plugin1",
                 "attribute": "bsn",
                 "value": "123",
-                "access_token": "some-token",
-            }
+            },
+            "oidc_access_token": "test-access-token",
         }
+        submission = SubmissionFactory.create()
 
-        with patch(
-            "token_exchange.signals.storage", access_token=None, plugin=None
-        ) as m_storage:
-            extract_access_token(sender="test", request=request)
+        set_submission_access_token(sender="test", instance=submission, request=request)
 
-            self.assertEqual("plugin1", m_storage.plugin)
-            self.assertEqual("some-token", m_storage.access_token)
+        self.assertEqual(
+            cache.get(f"accesstoken:{submission.uuid}"), "test-access-token"
+        )
 
-    def test_extract_access_token_no_token(self):
+    def test_no_session_on_request(self):
         request = factory.get("/foo")
-        request.session = {
-            FORM_AUTH_SESSION_KEY: {
-                "plugin": "plugin1",
-                "attribute": "bsn",
-                "value": "123",
-            }
-        }
+        submission = SubmissionFactory.build()
 
-        with patch(
-            "token_exchange.signals.storage", access_token=None, plugin=None
-        ) as m_storage:
-            extract_access_token(sender="test", request=request)
+        set_submission_access_token(sender="test", instance=submission, request=request)
 
-            self.assertIsNone(m_storage.plugin)
-            self.assertIsNone(m_storage.access_token)
-
-    def test_clear_access_token(self):
-        with patch(
-            "token_exchange.signals.storage",
-            access_token="some-token",
-            plugin="plugin1",
-        ) as m_storage:
-            clear_storage()
-
-            self.assertIsNone(m_storage.plugin)
-            self.assertIsNone(m_storage.access_token)
+        self.assertIsNone(cache.get(f"accesstoken:{submission.uuid}"))

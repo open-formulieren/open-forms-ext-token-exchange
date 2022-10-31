@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from unittest.mock import patch
 
+from django.core.cache import cache
 from django.test import TestCase
 
 import requests
 import requests_mock
+from openforms.submissions.tests.factories import SubmissionFactory
 
 from ..auth import TokenAccessAuth
 from .factories import TokenExchangeConfigurationFactory
@@ -22,18 +24,18 @@ class CustomAuthClassTests(TestCase):
         external_api_url = (
             "http://external-api-without-token-exchange.org/user/data/111"
         )
+        submission = SubmissionFactory.create()
 
         with requests_mock.mock() as m:
             m.get(external_api_url)
 
-            requests.get(external_api_url, auth=TokenAccessAuth())
+            requests.get(external_api_url, auth=TokenAccessAuth(submission))
             history = m.request_history
 
         self.assertEqual(1, len(history))
         self.assertNotIn("Authorization", history[0].headers)
 
-    @patch("token_exchange.auth.storage", plugin=None)
-    def test_no_plugin_in_storage(self, m_storage):
+    def test_no_authenticated_submission(self):
         external_api_url = (
             "http://external-api-without-token-exchange.org/user/data/111"
         )
@@ -41,28 +43,43 @@ class CustomAuthClassTests(TestCase):
         TokenExchangeConfigurationFactory.create(
             service__api_root="http://external-api-with-token-exchange.org/"
         )
+        submission = SubmissionFactory.create()
 
         with requests_mock.mock() as m:
             m.get(external_api_url)
-            requests.get(external_api_url, auth=TokenAccessAuth())
+            requests.get(external_api_url, auth=TokenAccessAuth(submission))
             history = m.request_history
 
         self.assertEqual(1, len(history))
         self.assertNotIn("Authorization", history[0].headers)
 
-    @patch(
-        "token_exchange.auth.storage",
-        access_token="some token to exchange",
-        plugin="digid_oidc",
-    )
+    def test_no_access_token_in_cache(self):
+        external_api_url = (
+            "http://external-api-without-token-exchange.org/user/data/111"
+        )
+
+        TokenExchangeConfigurationFactory.create(
+            service__api_root="http://external-api-with-token-exchange.org/"
+        )
+        submission = SubmissionFactory.create(auth_info__plugin="digid_oidc")
+
+        with requests_mock.mock() as m:
+            m.get(external_api_url)
+            requests.get(external_api_url, auth=TokenAccessAuth(submission))
+            history = m.request_history
+
+        self.assertEqual(1, len(history))
+        self.assertNotIn("Authorization", history[0].headers)
+
     @patch("token_exchange.auth.get_plugin_config")
-    def test_add_header(self, m_config, m_storage):
+    def test_add_header(self, m_config):
         external_api_url = "http://external-api-with-token-exchange.org/user/data/111"
 
         TokenExchangeConfigurationFactory.create(
             service__api_root="http://external-api-with-token-exchange.org/"
         )
-
+        submission = SubmissionFactory.create(auth_info__plugin="digid_oidc")
+        cache.set(f"accesstoken:{submission.uuid}", submission)
         m_config.return_value = TestOpenIDConnectPublicConfig(
             oidc_rp_client_id="digid-client-id",
             oidc_rp_client_secret="digid-secret",
@@ -75,8 +92,9 @@ class CustomAuthClassTests(TestCase):
                 json={"access_token": "wonderful-token"},
             )
 
-            requests.get(external_api_url, auth=TokenAccessAuth())
+            requests.get(external_api_url, auth=TokenAccessAuth(submission))
             history = m.request_history
 
+        # One call to the token exchange endpoint, one call to the external API
         self.assertEqual(2, len(history))
         self.assertIn("Authorization", history[1].headers)
