@@ -1,0 +1,72 @@
+name: Run CI
+
+# Run this workflow every time a new commit pushed to your repository
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  pull_request:
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: open-forms-ext-token-exchange
+
+jobs:
+  tests:
+    name: Run the Django test suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build test docker image
+        run: |
+          docker build . \
+            --tag $IMAGE_NAME:test \
+            --file ./ci/Dockerfile
+
+      - name: Run tests
+        run: |
+          docker-compose -f docker-compose.ci.yml up -d
+        working-directory: ci
+
+  docker_build:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set tag
+        id: vars
+        run: |
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name (if present at all)
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+
+          # PRs result in version 'merge' -> transform that into 'latest'
+          [ "$VERSION" == "merge" ] && VERSION=latest
+
+          echo ::set-output name=tag::${VERSION}
+
+      - name: Build the Docker image
+        run: |
+          docker build . \
+            --tag $IMAGE_NAME:$RELEASE_VERSION
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+
+      - run: docker image save -o image.tar $IMAGE_NAME:${{ steps.vars.outputs.tag }}
+      - name: Store image artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-image
+          path: image.tar
+          retention-days: 1
+
