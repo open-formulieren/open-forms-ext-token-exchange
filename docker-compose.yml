@@ -1,0 +1,107 @@
+version: '3.4'
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - ./docker-init-db.sql:/docker-entrypoint-initdb.d/init_db.sql
+      - db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6
+
+  sdk:
+    image: openformulieren/open-forms-sdk
+    ports:
+    - 8001:8080
+
+  busybox:
+    image: busybox
+    command: /bin/chown -R 1000 /private-media
+    volumes:
+      - private_media:/private-media
+
+  web:
+    build: &web_build
+      context: .
+      args:
+        RELEASE: ${TAG:-latest}
+        SDK_RELEASE: ${SDK_TAG:-latest}
+    image: open-forms-ext-token-exchange:latest
+    environment: &web_env
+      - DJANGO_SETTINGS_MODULE=openforms.conf.docker
+      - SECRET_KEY=${SECRET_KEY:-@r0w-0(&apjfde5fl6h23!vn)r1ldkp1c_d2#!$$did4z5hun4a}
+      - OPEN_FORMS_EXTENSIONS=token_exchange
+      - DB_NAME=openforms
+      - DB_USER=openforms
+      - DB_HOST=db
+      - CACHE_DEFAULT=redis:6379/0
+      - CACHE_AXES=redis:6379/0
+      - CACHE_OIDC=redis:6379/0
+      - CACHE_PORTALOCKER=redis:6379/0
+      - ALLOWED_HOSTS=*
+      - CORS_ALLOW_ALL_ORIGINS=yes
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_LOGLEVEL=DEBUG
+      - SDK_BASE_URL=${SDK_BASE_URL:-http://localhost:8001}
+      - OPENFORMS_LOCATION_CLIENT=${OPENFORMS_LOCATION_CLIENT:-openforms.contrib.bag.client.BAGClient}
+      - TWO_FACTOR_FORCE_OTP_ADMIN=0
+      - TWO_FACTOR_PATCH_ADMIN=0
+      # Needed for Celery Flower to match the TIME_ZONE configured in the
+      # settings used by workers and beat containers.
+      - TZ=Europe/Amsterdam
+    volumes:
+      - media:/app/media
+      - private_media:/app/private_media
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+      - sdk
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./docker-nginx-default.conf:/etc/nginx/conf.d/default.conf
+      - private_media:/private-media
+    ports:
+      - "9000:80"
+    depends_on:
+      - web
+
+  celery:
+    build: *web_build
+    image: open-forms-ext-token-exchange:latest
+    environment: *web_env
+    command: /celery_worker.sh
+    depends_on:
+      - db
+      - redis
+
+  celery-beat:
+    build: *web_build
+    image: open-forms-ext-token-exchange:latest
+    environment: *web_env
+    command: /celery_beat.sh
+    depends_on:
+      - db
+      - redis
+
+  celery-flower:
+    build: *web_build
+    image: open-forms-ext-token-exchange:latest
+    environment: *web_env
+    command: /celery_flower.sh
+    ports:
+      - 5555:5555
+    depends_on:
+      - redis
+      - celery
+
+volumes:
+  db:
+  media:
+  private_media:
