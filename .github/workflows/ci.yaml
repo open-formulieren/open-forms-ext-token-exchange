@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: open-forms-ext-token-exchange
+  IMAGE_NAME: openformulieren/open-forms-ext-token-exchange
 
 jobs:
   tests:
@@ -48,7 +48,7 @@ jobs:
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
 
           # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
+          [ "$VERSION" == "main" ] && VERSION=latest
 
           # PRs result in version 'merge' -> transform that into 'latest'
           [ "$VERSION" == "merge" ] && VERSION=latest
@@ -64,7 +64,7 @@ jobs:
 
       - run: docker image save -o image.tar $IMAGE_NAME:${{ steps.vars.outputs.tag }}
       - name: Store image artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: docker-image
           path: image.tar
