@@ -15,7 +15,7 @@ services:
       args:
         RELEASE: ${TAG:-latest}
         SDK_RELEASE: ${SDK_TAG:-latest}
-    image: open-forms-ext-token-exchange:test
+    image: openformulieren/open-forms-ext-token-exchange:test
     environment:
       - DJANGO_SETTINGS_MODULE=openforms.conf.docker
       - SECRET_KEY=${SECRET_KEY:-@r0w-0(&apjfde5fl6h23!vn)r1ldkp1c_d2#!$$did4z5hun4a}
