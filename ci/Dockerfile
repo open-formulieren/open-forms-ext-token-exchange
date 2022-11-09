@@ -8,17 +8,17 @@ COPY . /app
 RUN pip install -e .
 
 
-# Stage 2 - Build the production image with the demo extension
+# Stage 2 - Build the test image with the token exchange
 FROM openformulieren/open-forms:test AS test-build
 
 WORKDIR /app
 
 COPY ./bin/docker_test.sh /test.sh
 
-# Copy the dependencies of the demo-extension
+# Copy the dependencies of the token_exchange
 COPY --from=token-exchange-build-test /usr/local/lib/python3.8 /usr/local/lib/python3.8
 
-# Add demo_extension code to the image
+# Add token_exchange code to the image
 COPY --chown=maykin:root ./token_exchange /app/src/token_exchange
 
 USER maykin
