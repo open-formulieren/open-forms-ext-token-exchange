@@ -5,8 +5,8 @@ Open Forms extension token exchange
 
 :Version: 0.1.0
 :Source: https://github.com/open-formulieren/open-forms-ext-token-exchange
-:Keywords: ``<keywords>``
-:PythonVersion: 3.9
+:Keywords: ``Open Forms Extension`` ``Keycloak token exchange``
+:PythonVersion: 3.8
 
 |build-status| |code-quality| |black| |coverage|
 
