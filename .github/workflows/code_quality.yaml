@@ -15,19 +15,37 @@ on:
   workflow_dispatch:
 
 jobs:
-  linting:
-    name: Code-quality checks
+  isort:
+    name: Check import sorting
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        toxenv: [isort, black]
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+          cache: 'pip'
+      - name: Install OS dependencies
+        run: |
+          pip install isort
+      - uses: isort/isort-action@v1.1.0
+        with:
+          sort-paths: 'token_exchange tests'
+          configuration: '--check-only --diff'
+
+  black:
+    name: Check code formatting with black
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
       - name: Install dependencies
-        run: pip install tox
-      - run: tox
-        env:
-          TOXENV: ${{ matrix.toxenv }}
+        run: |
+          pip install black
+      - name: Run black
+        run: |
+          black --check token_exchange tests
