@@ -1,5 +1,5 @@
 # Stage 1 - Build token exchange environment
-FROM python:3.8-slim-buster AS token-exchange-build
+FROM python:3.10-slim-buster AS token-exchange-build
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ FROM openformulieren/open-forms:latest AS production-build
 WORKDIR /app
 
 # Copy the dependencies of the token_exchange
-COPY --from=token-exchange-build /usr/local/lib/python3.8 /usr/local/lib/python3.8
+COPY --from=token-exchange-build /usr/local/lib/python3.10 /usr/local/lib/python3.10
 
 # Add token_exchange code to the image
 COPY --chown=maykin:root ./token_exchange /app/src/token_exchange

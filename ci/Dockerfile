@@ -1,5 +1,5 @@
 # Stage 1 - Build Token exchange extension environment
-FROM python:3.8-slim-buster AS token-exchange-build-test
+FROM python:3.10-slim-buster AS token-exchange-build-test
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ WORKDIR /app
 COPY ./bin/docker_test.sh /test.sh
 
 # Copy the dependencies of the token_exchange
-COPY --from=token-exchange-build-test /usr/local/lib/python3.8 /usr/local/lib/python3.8
+COPY --from=token-exchange-build-test /usr/local/lib/python3.10 /usr/local/lib/python3.10
 
 # Add token_exchange code to the image
 COPY --chown=maykin:root ./token_exchange /app/src/token_exchange
