@@ -1,5 +1,5 @@
 # Stage 1 - Build token exchange environment
-FROM python:3.10-slim-buster AS token-exchange-build
+FROM python:3.10-slim-bullseye AS token-exchange-build
 
 WORKDIR /app
 
