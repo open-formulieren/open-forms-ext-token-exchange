@@ -66,19 +66,22 @@ jobs:
           export OPEN_FORMS_EXTENSIONS=token_exchange
 
           python src/manage.py compilemessages
-          coverage run \
-          --concurrency=multiprocessing \
-          --parallel-mode \
-          src/manage.py test token_exchange \
-            --parallel 2 \
-            --verbosity 2
+          coverage run --source=token_exchange src/manage.py test token_exchange
           coverage combine
+          coverage xml -o coverage-extension.xml
         env:
           DJANGO_SETTINGS_MODULE: openforms.conf.ci
           SECRET_KEY: dummy
           DB_USER: postgres
           DB_PASSWORD: ''
         working-directory: ${{ github.workspace }}/open-forms
+
+      - name: Publish coverage report
+        uses: codecov/codecov-action@v3.1.4
+        with:
+          root_dir: ${{ github.workspace }}/extension
+          working-directory: ${{ github.workspace }}/open-forms
+          files: ./coverage-extension.xml
 
   docker_build:
     name: Build Docker image
