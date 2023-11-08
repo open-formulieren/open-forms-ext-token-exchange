@@ -3,7 +3,7 @@
 Open Forms extension token exchange
 ===================================
 
-:Version: 0.3.0
+:Version: 0.4.0
 :Source: https://github.com/open-formulieren/open-forms-ext-token-exchange
 :Keywords: Open Forms Extension, Keycloak token exchange
 
@@ -42,7 +42,7 @@ Requirements
 ------------
 
 * Python 3.7 or above
-* setuptools 30.3.0 or above
+* setuptools 30.4.0 or above
 * Django 3.2
 
 
