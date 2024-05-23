@@ -39,6 +39,7 @@ jobs:
         with:
           repository: open-formulieren/open-forms
           path: open-forms
+          ref: issue/4199-session-persistance-ignores-login-choice
 
       - name: Checkout Token Exchange extension
         uses: actions/checkout@v3
