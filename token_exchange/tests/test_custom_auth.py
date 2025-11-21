@@ -1,23 +1,18 @@
-from dataclasses import dataclass
-from unittest.mock import patch
-
 from django.core.cache import cache
 from django.test import TestCase
 
 import requests
 import requests_mock
+from mozilla_django_oidc_db.models import OIDCClient
+from mozilla_django_oidc_db.tests.factories import (
+    OIDCProviderFactory,
+)
 
+from openforms.authentication.registry import register as auth_register
 from openforms.submissions.tests.factories import SubmissionFactory
 
 from ..auth import TokenAccessAuth
 from .factories import TokenExchangeConfigurationFactory
-
-
-@dataclass
-class TestOpenIDConnectPublicConfig:
-    oidc_rp_client_id: str
-    oidc_rp_client_secret: str
-    oidc_op_token_endpoint: str
 
 
 class CustomAuthClassTests(TestCase):
@@ -72,20 +67,22 @@ class CustomAuthClassTests(TestCase):
         self.assertEqual(1, len(history))
         self.assertNotIn("Authorization", history[0].headers)
 
-    @patch("token_exchange.auth.get_plugin_config")
-    def test_add_header(self, m_config):
+    def test_add_header(self):
+        auth_plugin = auth_register["digid_oidc"]
+        client = OIDCClient.objects.get(identifier=auth_plugin.oidc_plugin_identifier)
+        client.oidc_provider = OIDCProviderFactory.create(
+            oidc_op_token_endpoint="http://keycloak.nl/realms/zgw-publiek/protocol/openid-connect/token"
+        )
+        client.oidc_rp_client_id = "digid-client-id"
+        client.oidc_rp_client_secret = "digid-secret"
+        client.save()
         external_api_url = "http://external-api-with-token-exchange.org/user/data/111"
 
         TokenExchangeConfigurationFactory.create(
             service__api_root="http://external-api-with-token-exchange.org/"
         )
-        submission = SubmissionFactory.create(auth_info__plugin="digid_oidc")
+        submission = SubmissionFactory.create(auth_info__plugin=auth_plugin.identifier)
         cache.set(f"accesstoken:{submission.uuid}", submission)
-        m_config.return_value = TestOpenIDConnectPublicConfig(
-            oidc_rp_client_id="digid-client-id",
-            oidc_rp_client_secret="digid-secret",
-            oidc_op_token_endpoint="http://keycloak.nl/realms/zgw-publiek/protocol/openid-connect/token",
-        )
         with requests_mock.mock() as m:
             m.get(external_api_url)
             m.post(
