@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "open-forms-ext-token-exchange"
-version = "0.4.0"
+version = "0.5.0"
 description = "Open Forms extension to use Keycloak access tokens when requesting prefill data from external APIs."
 authors = [
     {name = "Maykin Media", email = "support@maykinmedia.nl"}
@@ -51,7 +51,6 @@ include = ["token_exchange*"]
 namespaces = true
 
 [tool.bumpversion]
-# current_version = "0.4.0"
 files = [
     {filename = "pyproject.toml"},
     {filename = "README.rst"},

@@ -3,7 +3,7 @@
 Open Forms extension token exchange
 ===================================
 
-:Version: 0.4.0
+:Version: 0.5.0
 :Source: https://github.com/open-formulieren/open-forms-ext-token-exchange
 :Keywords: Open Forms Extension, Keycloak token exchange
 
