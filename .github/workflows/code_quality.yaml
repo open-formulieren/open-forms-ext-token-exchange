@@ -7,43 +7,15 @@ on:
       - main
     tags:
       - '*'
-    paths:
-      - '**.py'
   pull_request:
-    paths:
-      - '**.py'
   workflow_dispatch:
 
 jobs:
-  isort:
-    name: Check import sorting
+  ruff:
+    name: Lint codebase with ruff
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Install dependencies
-        run: |
-          pip install isort
-      - uses: isort/isort-action@v1.1.0
-        with:
-          sort-paths: 'token_exchange tests'
-          configuration: '--check-only --diff'
-
-  black:
-    name: Check code formatting with black
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Install dependencies
-        run: |
-          pip install black
-      - name: Run black
-        run: |
-          black --check token_exchange tests
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3  # runs ruff check
+      - run: ruff format --check --diff

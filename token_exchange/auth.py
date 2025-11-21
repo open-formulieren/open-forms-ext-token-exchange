@@ -35,7 +35,8 @@ class TokenAccessAuth(AuthBase):
             return request
 
         auth_plugin = registry[self.submission.auth_info.plugin]
-        # Only the plugins that inherit from OIDCAuthentication have the attribute config_class
+        # Only the plugins that inherit from OIDCAuthentication have the attribute
+        # config_class
         if not hasattr(auth_plugin, "config_class"):
             return request
 

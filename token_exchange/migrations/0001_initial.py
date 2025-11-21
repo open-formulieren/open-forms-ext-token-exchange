@@ -27,7 +27,10 @@ class Migration(migrations.Migration):
                 (
                     "audience",
                     models.CharField(
-                        help_text="Specifies the scope/audience, so that Keycloak knows which sort of access token to return.",
+                        help_text=(
+                            "Specifies the scope/audience, so that Keycloak knows "
+                            "which sort of access token to return."
+                        ),
                         max_length=250,
                         verbose_name="audience",
                     ),

@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from openforms.pre_requests.base import PreRequestHookBase
 from openforms.pre_requests.clients import PreRequestClientContext
@@ -17,7 +16,7 @@ class TokenExchangePreRequestHook(PreRequestHookBase):
         method: str,
         url: str,
         kwargs,
-        context: Optional[PreRequestClientContext] = None,
+        context: PreRequestClientContext | None = None,
     ):
         if "auth" in kwargs:
             logger.warning(
