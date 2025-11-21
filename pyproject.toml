@@ -79,7 +79,6 @@ exclude_also = [
 [tool.pyright]
 include = [
     "token_exchange",
-    "testapp",
 ]
 ignore = []
 pythonVersion = "3.12"
