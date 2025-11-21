@@ -3,10 +3,13 @@ from dataclasses import dataclass
 from django.core.cache import cache
 
 import requests
-from openforms.authentication.registry import register as registry
-from openforms.submissions.models import Submission
+from mozilla_django_oidc_db.registry import register as oidc_registry
 from requests.auth import AuthBase
 from zgw_consumers.models import Service
+
+from openforms.authentication.registry import register as registry
+from openforms.contrib.auth_oidc.plugin import OIDCAuthentication
+from openforms.submissions.models import Submission
 
 from .models import TokenExchangeConfiguration
 
@@ -14,8 +17,22 @@ from .models import TokenExchangeConfiguration
 GRANT_TYPE = "urn:ietf:params:oauth:grant-type:token-exchange"
 
 
-def get_plugin_config(auth_plugin):
-    return auth_plugin.config_class.get_solo()
+@dataclass
+class OIDCConfig:
+    oidc_rp_client_id: str
+    oidc_rp_client_secret: str
+    oidc_op_token_endpoint: str
+
+
+def get_plugin_config(auth_plugin: OIDCAuthentication) -> OIDCConfig:
+    oidc_plugin = oidc_registry[auth_plugin.oidc_plugin_identifier]
+    client_config = oidc_plugin.get_config()
+    assert client_config.oidc_provider is not None
+    return OIDCConfig(
+        oidc_rp_client_id=client_config.oidc_rp_client_id,
+        oidc_rp_client_secret=client_config.oidc_rp_client_secret,
+        oidc_op_token_endpoint=client_config.oidc_provider.oidc_op_token_endpoint,
+    )
 
 
 @dataclass
@@ -35,12 +52,12 @@ class TokenAccessAuth(AuthBase):
             return request
 
         auth_plugin = registry[self.submission.auth_info.plugin]
-        # Only the plugins that inherit from OIDCAuthentication have the attribute config_class
-        if not hasattr(auth_plugin, "config_class"):
+
+        # Only the plugins that inherit from OIDCAuthentication have OIDC configuration.
+        if not isinstance(auth_plugin, OIDCAuthentication):
             return request
 
         plugin_config = get_plugin_config(auth_plugin)
-
         # Perform token exchange
         response = requests.post(
             plugin_config.oidc_op_token_endpoint,

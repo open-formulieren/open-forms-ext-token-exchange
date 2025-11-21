@@ -18,7 +18,8 @@ class TokenExchangeConfiguration(models.Model):
     audience = models.CharField(
         verbose_name=_("audience"),
         help_text=_(
-            "Specifies the scope/audience, so that Keycloak knows which sort of access token to return."
+            "Specifies the scope/audience, so that Keycloak knows which sort of access "
+            "token to return."
         ),
         blank=False,
         max_length=250,
@@ -27,13 +28,13 @@ class TokenExchangeConfiguration(models.Model):
     class Meta:
         verbose_name = _("Token exchange plugin configuration")
 
-    def save(self, *args, **kwargs) -> None:
-        if not self.label and (self.service and self.service.label):
-            self.label = self.service.label
-        return super().save(*args, **kwargs)
-
     def __str__(self) -> str:
         if not self.label:
             return super().__str__()
 
         return self.label
+
+    def save(self, *args, **kwargs) -> None:
+        if not self.label and (self.service and self.service.label):
+            self.label = self.service.label
+        return super().save(*args, **kwargs)

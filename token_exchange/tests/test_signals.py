@@ -1,9 +1,10 @@
 from django.core.cache import cache
 from django.test import TestCase
 
+from rest_framework.test import APIRequestFactory
+
 from openforms.authentication.constants import FORM_AUTH_SESSION_KEY
 from openforms.submissions.tests.factories import SubmissionFactory
-from rest_framework.test import APIRequestFactory
 
 from ..signals import set_submission_access_token
 

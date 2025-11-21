@@ -7,7 +7,7 @@ Open Forms extension token exchange
 :Source: https://github.com/open-formulieren/open-forms-ext-token-exchange
 :Keywords: Open Forms Extension, Keycloak token exchange
 
-|build-status| |code-quality| |black| |coverage|
+|build-status| |code-quality| |ruff| |coverage|
 
 |python-versions| |django-versions| |pypi-version|
 
@@ -41,10 +41,14 @@ Installation
 Requirements
 ------------
 
-* Python 3.7 or above
-* setuptools 30.3.0 or above
-* Django 3.2
+* Open Forms 3.3.0 or newer.
 
+Install
+-------
+
+.. code-block:: bash
+
+    uv pip install open-forms-ext-token-exchange
 
 Usage
 =====
@@ -76,8 +80,9 @@ Save the configuration.
      :alt: Code quality checks
      :target: https://github.com/open-formulieren/open-forms-ext-token-exchange/actions?query=workflow%3A%22Code+quality+checks%22
 
-.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/psf/black
+.. |ruff| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+    :target: https://github.com/astral-sh/ruff
+    :alt: Ruff
 
 .. |coverage| image:: https://codecov.io/gh/open-formulieren/open-forms-ext-token-exchange/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/open-formulieren/open-forms-ext-token-exchange
