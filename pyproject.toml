@@ -1,3 +1,113 @@
 [build-system]
-requires = ["setuptools >= 30.3.0"]  # version supporting setup.cfg]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "open-forms-ext-token-exchange"
+version = "0.4.0"
+description = "Open Forms extension to use Keycloak access tokens when requesting prefill data from external APIs."
+authors = [
+    {name = "Maykin Media", email = "support@maykinmedia.nl"}
+]
+readme = "README.rst"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["Open Forms Extension", "Keycloak token exchange"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Intended Audience :: Developers",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "django>=4.2",
+    "furl",
+    "zgw_consumers >= 1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/open-formulieren/open-forms-ext-token-exchange"
+"Bug Tracker" = "https://github.com/open-formulieren/open-forms-ext-token-exchange/issues"
+"Source Code" = "https://github.com/open-formulieren/open-forms-ext-token-exchange"
+
+[project.optional-dependencies]
+tests = [
+    "ruff",
+    # "pyright",
+    # "django-stubs",
+]
+release = [
+    "bump-my-version",
+]
+
+[tool.setuptools.packages.find]
+include = ["token_exchange*"]
+namespaces = true
+
+[tool.bumpversion]
+# current_version = "0.4.0"
+files = [
+    {filename = "pyproject.toml"},
+    {filename = "README.rst"},
+]
+
+[tool.coverage.run]
+branch = true
+source = ["token_exchange"]
+omit = [
+    # migrations run while django initializes the test db
+    "*/migrations/*",
+]
+
+[tool.coverage.report]
+exclude_also = [
+    "if (typing\\.)?TYPE_CHECKING:",
+    "@(typing\\.)?overload",
+    "class .*\\(.*Protocol.*\\):",
+    "@(abc\\.)?abstractmethod",
+    "raise NotImplementedError",
+    "\\.\\.\\.",
+    "\\bpass$",
+]
+
+[tool.pyright]
+include = [
+    "token_exchange",
+    "testapp",
+]
+ignore = []
+pythonVersion = "3.12"
+pythonPlatform = "Linux"
+
+[tool.ruff.lint]
+extend-select = [
+    "UP",  # pyupgrade
+    "DJ",  # django
+    "LOG", # logging
+    "G",
+    "I",   # isort
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "PERF",# perflint
+    "B",   # flake8-bugbear
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+section-order = [
+    "future",
+    "standard-library",
+    "django",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+
+[tool.ruff.lint.isort.sections]
+"django" = ["django"]
