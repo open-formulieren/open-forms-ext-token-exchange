@@ -104,9 +104,11 @@ section-order = [
     "standard-library",
     "django",
     "third-party",
+    "openforms",
     "first-party",
     "local-folder",
 ]
 
 [tool.ruff.lint.isort.sections]
 "django" = ["django"]
+"openforms" = ["openforms"]

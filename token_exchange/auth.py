@@ -3,10 +3,11 @@ from dataclasses import dataclass
 from django.core.cache import cache
 
 import requests
-from openforms.authentication.registry import register as registry
-from openforms.submissions.models import Submission
 from requests.auth import AuthBase
 from zgw_consumers.models import Service
+
+from openforms.authentication.registry import register as registry
+from openforms.submissions.models import Submission
 
 from .models import TokenExchangeConfiguration
 

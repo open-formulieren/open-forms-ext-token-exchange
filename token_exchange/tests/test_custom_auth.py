@@ -6,6 +6,7 @@ from django.test import TestCase
 
 import requests
 import requests_mock
+
 from openforms.submissions.tests.factories import SubmissionFactory
 
 from ..auth import TokenAccessAuth
