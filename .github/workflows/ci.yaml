@@ -9,6 +9,8 @@ on:
       - '*'
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '15 4 * * *'
 
 env:
   IMAGE_NAME: openformulieren/open-forms-ext-token-exchange
