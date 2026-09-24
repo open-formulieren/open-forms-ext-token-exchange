@@ -111,3 +111,6 @@ section-order = [
 [tool.ruff.lint.isort.sections]
 "django" = ["django"]
 "openforms" = ["openforms"]
+
+[tool.ruff.lint.per-file-ignores]
+"token_exchange/**/migrations/*" = ["RUF012"]
