@@ -60,7 +60,6 @@ jobs:
           pg-service: 'postgres'
           setup-node: 'yes'
           nvmrc-custom-dir: 'open-forms'
-          npm-ci-flags: '--legacy-peer-deps'
           working-directory: ${{ github.workspace }}/open-forms
 
       - name: Make symlink in OF to the extension
